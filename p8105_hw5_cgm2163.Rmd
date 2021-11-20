@@ -55,13 +55,9 @@ homicide_data =
   select(city_state, resolved) %>%
   filter(city_state != "Tulsa_AL")
 
-
-view(homicide_data)
-
-
 ```
 
-now we can see how many homicides and how many unsolved homicides are in each city
+Now we can see how many homicides and how many unsolved homicides are in each city
 
 ```{r}
 
@@ -77,7 +73,9 @@ view(summary_data)
 
 ```
 
-Let's look at our Baltimore data!
+There are `r nrow(distinct(summary_data))` cities in this data set. But let's 
+focus on our Baltimore data!
+
 
 ```{r}
 
@@ -146,7 +144,9 @@ head(cities_test_results) %>%
 
 ```
 
-graph!
+Now that we have all of our estimates, we can create a plot with error bars
+that shows the distribution of proportion of unsolved homicides in order from 
+least to most.
 
 ```{r}
 
@@ -158,6 +158,8 @@ cities_test_results %>%
 
 ```
 
+We can see from this output that Richmond, VA has the lowest proportion of 
+unsolved homicides and Chicago, IL has the highest.
 
 ## Problem 2
 
@@ -209,8 +211,66 @@ experimental group almost all grow up.
 
 
 
-##Question 3
+## Question 3
 
+For this homework, we were provided with a code chunk that will load the
+iris data set, which we can read in now.
+
+
+```{r}
+
+library(tidyverse)
+
+set.seed(10)
+
+iris_with_missing = iris %>% 
+  map_df(~replace(.x, sample(1:150, 20), NA)) %>%
+  mutate(Species = as.character(Species)) %>%
+  janitor::clean_names()
+
+view(iris_with_missing)
+
+```
+
+
+
+
+This data has `r nrow(iris_with_missing)` rows and `r ncol(iris_with_missing)` columns.
+However, there are a number of missing values:
+
+
+```{r}
+
+colSums(is.na(iris_with_missing))
+
+```
+
+We can see from the data frame that there are 20 missing observations in each
+column. We can substitute the appropriate fill-ins and clean using the code 
+chunk below.
+
+```{r}
+
+cleaning_function = function(x){
+  if (is.character(x)) {
+    x = replace_na(x, "virginica")
+  } else if (is.numeric(x)) {
+    x = replace_na(x, mean(x, na.rm = TRUE))
+  }
+}
+  
+cleaning_iris = 
+  map(iris_with_missing, cleaning_function) %>%
+  as_tibble()
+
+colSums(is.na(cleaning_iris))
+
+
+```
+
+
+We can see now that there are no missing values in ANY column, and our data
+is now cleaned!
 
 
 
