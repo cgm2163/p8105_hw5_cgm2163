@@ -8,6 +8,7 @@ output: github_document
 ```{r setup, include = FALSE}
 
 library(tidyverse)
+library(rvest)
 
 knitr::opts_chunk$set(
   fig.width = 6,
@@ -157,22 +158,58 @@ cities_test_results %>%
 
 ```
 
+
 ## Problem 2
+
+We have been presented with a zip file full of longitudinal study data. We can
+read in and tidy this data so that it is more easily understood and better for
+graphical visualization.
 
 ```{r}
 
-  
-  
+longitudinal_study =
+  tibble(file_name = list.files(path = "./data", full.names = TRUE)) %>%
+  mutate(data = purrr::map(.x = file_name, ~read_csv(.x))) %>%
+  unnest(data) %>%
+    separate(file_name, c("file_1", "file_2", "name"), sep = "/") %>%
+    separate(name, c("arm", "id", "csv")) %>%
+      mutate(wing = recode(arm, con = "control", exp = "experimental")) %>%
+  select(-file_1, -file_2, -csv, -arm) %>%
+  pivot_longer(week_1:week_8,
+               names_to = "week",
+               values_to = "data_point",
+               names_prefix = "week_"
+               ) %>%
+  mutate(as.factor(week))
 
 ```
 
+Now we can use the resulting dataframe, _longitudinal_study_, to create a 
+spaghetti plot so we can better understand the trends.
+
+```{r}
+
+longitudinal_study %>%
+  ggplot(aes(x = week, y = data_point, group = id, color = id)) + geom_line() +
+  theme(legend.position = "right") +
+  labs(
+    x = "Week of Observation",
+    y = "Data Value Collected by Wing",
+    title = "Participant Data by Week"
+  ) + facet_grid(cols = vars(wing))
+
+
+```
+
+From this graph, it is easy to see that the values in the experimental group are
+much higher than the control group, and the upward trend in points among the 
+experimental group are much more consistent. It almost appears that the majority
+of the control group trend downwards as the weeks go on, whereas the 
+experimental group almost all grow up.
 
 
 
-
-
-
-
+##Question 3
 
 
 
